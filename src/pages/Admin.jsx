@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { PlusCircle, X, ChevronDown, Check, LayoutDashboard, LineChart } from 'lucide-react';
+import { PlusCircle, X, ChevronDown, Check, LayoutDashboard, LineChart, Eye } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 function Admin() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -10,6 +11,10 @@ function Admin() {
   const [submitError, setSubmitError] = useState(null);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [analyzingTestId, setAnalyzingTestId] = useState(null);
+  const [viewingResultsId, setViewingResultsId] = useState(null);
+  const [testResults, setTestResults] = useState([]);
+  const [showResults, setShowResults] = useState(false);
+  
   
   // Form state
   const [testName, setTestName] = useState('');
@@ -57,22 +62,24 @@ function Admin() {
     }
   };
 
+  const navigate = useNavigate();
+  const handleFinal = (userId, testId) => {
+    navigate(`/final-analysis?testId=${testId}&userId=${userId}`);
+  };
+
   const handleAnalyze = async (testId) => {
     setAnalyzingTestId(testId);
     let formData = new FormData();
     formData.append('test_id', testId);
-    
     try {
       const token = localStorage.getItem("token");
       const response = await fetch('https://intervu-1-0.onrender.com/admin/analyze', {
         method: 'POST',
         headers: {
-          // 'Content-Type': 'application/json',
           "Authorization": `${token}`
         },
         credentials: 'include',
         body: formData
-        // body: JSON.stringify({ testId }),
       });
 
       if (!response.ok) {
@@ -81,13 +88,43 @@ function Admin() {
 
       const data = await response.json();
       console.log('Analysis result:', data);
-      // Handle the analysis result as needed
       alert('Analysis completed successfully!');
     } catch (error) {
       console.error('Error analyzing test:', error);
       alert('Failed to analyze test. Please try again.');
     } finally {
       setAnalyzingTestId(null);
+    }
+  };
+
+  const handleViewResults = async (testId) => {
+    setViewingResultsId(testId);
+    let formData = new FormData();
+    formData.append('test_id', testId);
+    
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch('https://intervu-1-0.onrender.com/admin/get_test_user', {
+        method: 'POST',
+        headers: {
+          "Authorization": `${token}`
+        },
+        credentials: 'include',
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setTestResults(data);
+      setShowResults(true);
+    } catch (error) {
+      console.error('Error fetching results:', error);
+      alert('Failed to fetch results. Please try again.');
+    } finally {
+      // setViewingResultsId(null);
     }
   };
 
@@ -171,10 +208,8 @@ function Admin() {
       setNewTest(responseData);
       setSubmitSuccess(true);
       
-      // Refresh existing tests list
       fetchExistingTests();
       
-      // Close modal after successful submission
       setTimeout(() => {
         handleCloseModal();
       }, 1500);
@@ -224,7 +259,7 @@ function Admin() {
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                 {test._id || test.id}
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 space-x-2">
                 <button
                   onClick={() => handleAnalyze(test._id)}
                   disabled={analyzingTestId === test._id}
@@ -234,6 +269,15 @@ function Admin() {
                 >
                   <LineChart className="h-4 w-4 mr-1" />
                   {analyzingTestId === test._id ? 'Analyzing...' : 'Analyze'}
+                </button>
+                <button
+                  onClick={() => handleViewResults(test._id)}
+                  // disabled={viewingResultsId === test._id}
+                  className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 
+                    `}
+                >
+                  <Eye className="h-4 w-4 mr-1" />
+                  {'See Results'}
                 </button>
               </td>
             </tr>
@@ -267,6 +311,71 @@ function Admin() {
             Create Test
           </button>
         </div>
+
+        {/* Results Section */}
+        {showResults && (
+          <div className="fixed inset-0 overflow-y-auto z-50">
+            <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+              <div className="fixed inset-0 transition-opacity" aria-hidden="true">
+                <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
+              </div>
+
+              <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+              <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+                <div className="bg-white px-4 pt-5 pb-4 sm:p-6">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-lg font-medium text-gray-900">Test Results</h3>
+                    <button
+                      onClick={() => setShowResults(false)}
+                      className="text-gray-400 hover:text-gray-500"
+                    >
+                      <X className="h-6 w-6" />
+                    </button>
+                  </div>
+                  
+                  <div className="mt-4">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            User ID
+                          </th>
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Username
+                          </th>
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Actions
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {testResults.map((result, index) => (
+                          <tr key={index} className="hover:bg-gray-50">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {result._id}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {result.username}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              <button
+                                onClick={() => handleFinal(result._id, viewingResultsId)}
+                                className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                              >
+                                View Analysis
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* New Test Section */}
         {newTest && (

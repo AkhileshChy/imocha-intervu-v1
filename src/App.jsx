@@ -8,6 +8,7 @@ import Admin from './pages/Admin'
 import Interview from './pages/Interview'
 import User from './pages/User'
 import Feedback from './pages/Feedback'
+import FinalAnalysis from './pages/FinalAnalysis'
 
 const App = () => {
   return (
@@ -21,6 +22,7 @@ const App = () => {
         <Route path='/interview/:id' element={<Interview />} />
         <Route path='/user' element={<User />} />
         <Route path='/feedback' element={<Feedback />} />
+        <Route path='/final-analysis' element={<FinalAnalysis />} />
 
       </Routes>
     </div>
