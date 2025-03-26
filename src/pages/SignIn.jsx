@@ -1,7 +1,8 @@
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { User, Lock, AlertCircle } from 'lucide-react'
+import { useAuth } from '../context/AuthContext'
 
 export default function SignIn() {
   const navigate = useNavigate()
@@ -11,6 +12,7 @@ export default function SignIn() {
   const [isAnimating, setIsAnimating] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
+  const { validateUser } = useAuth()
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -61,7 +63,7 @@ export default function SignIn() {
 
       // Start animation
       setIsAnimating(true)
-
+      await validateUser();
       // Wait for animation to complete before navigating
       setTimeout(() => {
         if (data.is_admin === true) {
