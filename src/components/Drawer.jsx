@@ -1,9 +1,8 @@
 import React from 'react';
 import { MessageCircle, X, User } from 'lucide-react';
 
-
-
 function Drawer({ isOpen, onClose, data }) {
+  console.log(data)
   return (
     <div
       className={`fixed inset-y-0 right-0 w-[40%] bg-indigo-100 backdrop-blur-sm shadow-xl transform transition-transform duration-300 ease-in-out ${
@@ -25,7 +24,7 @@ function Drawer({ isOpen, onClose, data }) {
         </div>
         
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          {data.Conversation.conversation.map((item, index) => (
+          {data.map((item, index) => (
             <div key={index} className="space-y-3">
               {/* Question */}
               <div className="flex gap-2">
@@ -33,7 +32,7 @@ function Drawer({ isOpen, onClose, data }) {
                   <User className="w-5 h-5 text-indigo-600" />
                 </div>
                 <div className="flex-1 bg-white rounded-lg rounded-tl-none px-3 py-2">
-                  <p className="text-md text-black ">{item.question}</p>
+                  <p className="text-md text-black">{item.Question}</p>
                 </div>
               </div>
 
@@ -43,7 +42,7 @@ function Drawer({ isOpen, onClose, data }) {
                   <MessageCircle className="w-5 h-5 text-white" />
                 </div>
                 <div className="flex-1 bg-white rounded-lg rounded-tr-none px-3 py-2">
-                  <p className="text-sm text-black">{item.answer}</p>
+                  <p className="text-sm text-black">{item.Answer}</p>
                 </div>
               </div>
             </div>

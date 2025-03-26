@@ -29,6 +29,7 @@ const Interview = () => {
   // console.log(title)
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [adaptiveBool, setAdaptiveBool] = useState(false);
   // const [interviewType, setInterviewType] = useState('ai'); // 'ai' or 'static'
 
 
@@ -170,11 +171,12 @@ const Interview = () => {
       // if (!response.ok) {
       //   throw new Error("Failed to submit recording");
       // }
-
+      console.log(adaptiveBool);
       const formData2 = new FormData();
       formData2.append("audio_file", audioBlob, "recording.wav");
       formData2.append("previous_question", question);
       formData2.append("test_id", `${id}`);
+      formData2.append("adaptive", adaptiveBool);
       // const tok = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJnIiwiZXhwIjoxNzQxODA2NDIzfQ.OWXwz4N6eydzIm4d5CYYPTNrhuUqukE96fvVlaqEUNg'
       const response2 = await fetch("https://intervu-1-0.onrender.com/test/getQuestion", {
         method: "POST",
@@ -184,23 +186,24 @@ const Interview = () => {
         },
         body: formData2,
       });
-
+      
       if (!response2.ok) {
         throw new Error("Failed to submit recording");
       }
       // let result;
-
+      
       let result = await response2.json();
       console.log(result);
-
-      if (currentQuestionIndex === 2) {
+      
+      if (currentQuestionIndex === 4) {
         navigate("/feedback");
         return;
       }
-
-      setQuestion(result);
-      generateSpeech(result);
-      setCurrentQuestionIndex((prev) => prev + 1);
+      
+      setQuestion(result[0]);
+      setAdaptiveBool(result[1]);
+      generateSpeech(result[0]);
+      if (!result[1]) setCurrentQuestionIndex((prev) => prev + 1);
       setRecordedChunks([]);
     } catch (error) {
       console.error("Error submitting recording:", error);
@@ -243,6 +246,7 @@ const Interview = () => {
 
       let formData = new FormData();
       formData.append("domain", `${title}`);
+      
 
       const response = await fetch(
         "https://intervu-1-0.onrender.com/FirstQuestion",
@@ -257,8 +261,9 @@ const Interview = () => {
       }
 
       const data = await response.json();
+      console.log(data);
       setQuestion(data);
-      generateSpeech(data);
+      generateSpeech(data[0]);
     } catch (error) {
       console.error("Error:", error);
       setQuestion("Error loading question. Please try again.");
@@ -316,7 +321,7 @@ const Interview = () => {
             <Card className="h-full bg-black/70 backdrop-blur-sm shadow-lg">
               <CardHeader>
                 <h2 className="text-white text-xl font-semibold">
-                  Question {currentQuestionIndex + 1}
+                  Question {currentQuestionIndex + 1}{adaptiveBool ? ".1" : ""}
                 </h2>
               </CardHeader>
               <CardContent className="space-y-6">

@@ -31,7 +31,7 @@ function Admin() {
     'Product-Manager',
   ];
 
-  const testTypes = ['adaptive', 'static'];
+  const testTypes = ['adaptive', 'static', 'hybrid'];
 
   useEffect(() => {
     fetchExistingTests();
@@ -378,7 +378,7 @@ function Admin() {
         )}
 
         {/* New Test Section */}
-        {newTest && (
+        {/* {newTest && (
           <div className="bg-white shadow rounded-lg p-6">
             <h2 className="text-xl font-semibold text-gray-800 mb-4">New Test</h2>
             <div className="bg-green-50 border border-green-200 rounded-md p-4 mb-4">
@@ -386,11 +386,11 @@ function Admin() {
             </div>
             <TestTable tests={[newTest]} />
           </div>
-        )}
+        )} */}
 
         {/* Existing Tests Section */}
         <div className="bg-white shadow rounded-lg p-6">
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">Previously Created Tests</h2>
+          <h2 className="text-xl font-semibold text-gray-800 mb-4">Tests Created</h2>
           {isLoading ? (
             <div className="text-center py-12">
               <p className="text-gray-500">Loading tests...</p>

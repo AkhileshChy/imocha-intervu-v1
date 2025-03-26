@@ -9,8 +9,9 @@ import {
     Legend,
 } from 'chart.js';
 import { Radar } from 'react-chartjs-2';
-import { Gauge, Brain, MessageSquare, Lightbulb, Code, Trophy } from 'lucide-react';
+import { Gauge, Brain, MessageSquare, Lightbulb, Code, Trophy, CheckCircle, XCircle, Target, MessageCircle } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
+import Drawer from '../components/Drawer';
 
 ChartJS.register(
     RadialLinearScale,
@@ -31,12 +32,16 @@ const descriptions = {
 
 function FinalAnalysis() {
     const [scores, setScores] = useState(null);
+    const [assessment, setAssessment] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const location = useLocation();
     const queryParams = new URLSearchParams(location.search);
     const testId = queryParams.get("testId");
     const userId = queryParams.get("userId");
+    const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+    const [transcriptions, setTranscriptions] = useState("");
+
 
     useEffect(() => {
         const fetchScores = async () => {
@@ -54,16 +59,32 @@ function FinalAnalysis() {
                     body: formData
                 });
                 const res = await response.json();
-                console.log(res);
-                setScores(res);
+                const { assessment, ...scoreData } = res.score;
+                setScores(scoreData);
+                console.log(res.transcript)
+                setTranscriptions(res.transcript)
+                setAssessment(assessment);
             } catch (err) {
                 setError('Failed to fetch scores');
+                // Fallback data for development
                 setScores({
-                    problem_solving_ability: 23.5,
-                    technical_proficiency: 24.0,
-                    structured_thinking: 21.0,
-                    real_world_application: 22.5,
-                    communication_skills: 22.0
+                    problem_solving_ability: 6.5,
+                    technical_proficiency: 7.0,
+                    structured_thinking: 5.5,
+                    real_world_application: 6.0,
+                    communication_skills: 6.0
+                });
+                setAssessment({
+                    "Overall Summary": "The candidate demonstrated some knowledge of overfitting and its causes, but struggled to provide specific solutions and explanations.",
+                    "Feedback": {
+                        "Strengths": "The candidate was able to identify some common techniques.",
+                        "Weaknesses": "The candidate lacked confidence and clarity in their responses."
+                    },
+                    "Areas for Improvement": [
+                        "Develop a deeper understanding of machine learning concepts",
+                        "Improve problem-solving skills",
+                        "Enhance communication skills"
+                    ]
                 });
             } finally {
                 setLoading(false);
@@ -90,7 +111,7 @@ function FinalAnalysis() {
     }
 
     const totalScore = Object.values(scores).reduce((acc, curr) => acc + curr, 0);
-    const overallPercentage = (totalScore / 150 * 100).toFixed(1);
+    const overallPercentage = (totalScore / (50 * 5) * 100).toFixed(1); // Assuming max score is 10 for each category
 
     const labels = Object.keys(scores).map(key =>
         key.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase())
@@ -111,6 +132,19 @@ function FinalAnalysis() {
 
     return (
         <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+            <button
+                onClick={() => setIsDrawerOpen(true)}
+                className="fixed top-4 right-4 bg-indigo-600 text-white p-2 rounded-full shadow-lg hover:bg-indigo-700 transition-colors z-50"
+                aria-label="Open conversation"
+            >
+                <MessageCircle className="w-6 h-6" />
+            </button>
+
+            <Drawer
+                isOpen={isDrawerOpen}
+                onClose={() => setIsDrawerOpen(false)}
+                data={transcriptions}
+            />
             <div className="max-w-7xl mx-auto">
                 <h1 className="text-3xl font-bold text-gray-900 text-center mb-12">Final Analysis</h1>
 
@@ -127,7 +161,7 @@ function FinalAnalysis() {
                         </div>
                     </div>
 
-                    {/* Two Column Layout for Detailed Breakdown and Radar Chart */}
+                    {/* First Row: Detailed Breakdown and Score Distribution */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         {/* Individual Scores Card */}
                         <div className="bg-white rounded-xl shadow-lg p-6">
@@ -138,13 +172,13 @@ function FinalAnalysis() {
                                         <h3 className="text-lg font-medium text-gray-800">
                                             {key.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
                                         </h3>
-                                        <span className="text-lg font-bold text-indigo-600">{(score / 30 * 100).toFixed(2)}%</span>
+                                        <span className="text-lg font-bold text-indigo-600">{(score / 50 * 100).toFixed(1)}%</span>
                                     </div>
                                     <p className="text-sm text-gray-600 mb-2">{descriptions[key]}</p>
                                     <div className="w-full bg-gray-200 rounded-full h-2.5">
                                         <div
                                             className="bg-indigo-600 h-2.5 rounded-full"
-                                            style={{ width: `${score/30 * 100}%` }}
+                                            style={{ width: `${score / 50 * 100}%` }}
                                         ></div>
                                     </div>
                                 </div>
@@ -161,9 +195,9 @@ function FinalAnalysis() {
                                         scales: {
                                             r: {
                                                 beginAtZero: true,
-                                                max: 30,
+                                                max: 50,
                                                 ticks: {
-                                                    stepSize: 5
+                                                    stepSize: 10
                                                 }
                                             }
                                         },
@@ -177,6 +211,53 @@ function FinalAnalysis() {
                             </div>
                         </div>
                     </div>
+
+                    {/* Second Row: Overall Summary and Detailed Feedback */}
+                    {assessment && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            {/* Overall Summary Card */}
+                            <div className="bg-white rounded-xl shadow-lg p-6">
+                                <h2 className="text-xl font-semibold text-gray-800 mb-4">Overall Summary</h2>
+                                <p className="text-gray-700">{assessment["Overall Summary"]}</p>
+                            </div>
+
+                            {/* Feedback and Improvements Card */}
+                            <div className="bg-white rounded-xl shadow-lg p-6">
+                                <h2 className="text-xl font-semibold text-gray-800 mb-4">Detailed Feedback</h2>
+
+                                {/* Strengths */}
+                                <div className="mb-6">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <CheckCircle className="h-5 w-5 text-green-500" />
+                                        <h3 className="text-lg font-medium text-gray-800">Strengths</h3>
+                                    </div>
+                                    <p className="text-gray-700">{assessment.Feedback.Strengths}</p>
+                                </div>
+
+                                {/* Weaknesses */}
+                                <div className="mb-6">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <XCircle className="h-5 w-5 text-red-500" />
+                                        <h3 className="text-lg font-medium text-gray-800">Weaknesses</h3>
+                                    </div>
+                                    <p className="text-gray-700">{assessment.Feedback.Weaknesses}</p>
+                                </div>
+
+                                {/* Areas for Improvement */}
+                                <div>
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <Target className="h-5 w-5 text-blue-500" />
+                                        <h3 className="text-lg font-medium text-gray-800">Areas for Improvement</h3>
+                                    </div>
+                                    <ul className="list-disc list-inside text-gray-700">
+                                        {assessment["Areas for Improvement"].map((area, index) => (
+                                            <li key={index} className="mb-1">{area}</li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

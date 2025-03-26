@@ -13,18 +13,19 @@ import FinalAnalysis from './pages/FinalAnalysis'
 const App = () => {
   return (
     <div>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<SignIn />} />
-        <Route path="/signup" element={<SignUp />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/admin" element={<Admin />} />
-        <Route path='/interview/:id' element={<Interview />} />
-        <Route path='/user' element={<User />} />
-        <Route path='/feedback' element={<Feedback />} />
-        <Route path='/final-analysis' element={<FinalAnalysis />} />
 
-      </Routes>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<SignIn />} />
+          <Route path="/signup" element={<SignUp />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/admin" element={<Admin />} />
+          <Route path='/interview/:id' element={<Interview />} />
+          <Route path='/user' element={<User />} />
+          <Route path='/feedback' element={<Feedback />} />
+          <Route path='/final-analysis' element={<FinalAnalysis />} />
+
+        </Routes>
     </div>
   )
 }
