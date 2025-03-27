@@ -9,8 +9,8 @@ import {
     Legend,
 } from 'chart.js';
 import { Radar } from 'react-chartjs-2';
-import { Gauge, Brain, MessageSquare, Lightbulb, Code, Trophy, CheckCircle, XCircle, Target, MessageCircle } from 'lucide-react';
-import { useLocation } from 'react-router-dom';
+import { Gauge, Brain, MessageSquare, Lightbulb, Code, Trophy, CheckCircle, XCircle, Target, MessageCircle, ArrowLeft } from 'lucide-react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Drawer from '../components/Drawer';
 
 ChartJS.register(
@@ -41,6 +41,7 @@ function FinalAnalysis() {
     const userId = queryParams.get("userId");
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const [transcriptions, setTranscriptions] = useState("");
+    const navigate = useNavigate();
 
 
     useEffect(() => {
@@ -132,6 +133,14 @@ function FinalAnalysis() {
 
     return (
         <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+            <button
+                onClick={() => navigate('/admin')}
+                className="fixed top-4 left-4 bg-indigo-600 text-white p-2 rounded-full shadow-lg hover:bg-indigo-700 transition-colors z-50 flex items-center gap-2"
+                aria-label="Back to Admin"
+            >
+                <ArrowLeft className="w-6 h-6" />
+                <span className="hidden sm:inline"></span>
+            </button>
             <button
                 onClick={() => setIsDrawerOpen(true)}
                 className="fixed top-4 right-4 bg-indigo-600 text-white p-2 rounded-full shadow-lg hover:bg-indigo-700 transition-colors z-50"

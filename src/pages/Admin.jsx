@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { PlusCircle, X, ChevronDown, Check, LayoutDashboard, LineChart, Eye } from 'lucide-react';
+import { PlusCircle, X, ChevronDown, Check, LayoutDashboard, LineChart, Eye, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 function Admin() {
@@ -14,8 +14,8 @@ function Admin() {
   const [viewingResultsId, setViewingResultsId] = useState(null);
   const [testResults, setTestResults] = useState([]);
   const [showResults, setShowResults] = useState(false);
-  
-  
+
+
   // Form state
   const [testName, setTestName] = useState('');
   const [domain, setDomain] = useState('Frontend Development');
@@ -48,11 +48,11 @@ function Admin() {
         },
         credentials: 'include'
       });
-      
+
       if (!response.ok) {
         throw new Error(`Error: ${response.status}`);
       }
-      
+
       const data = await response.json();
       setExistingTests(data);
     } catch (error) {
@@ -101,7 +101,7 @@ function Admin() {
     setViewingResultsId(testId);
     let formData = new FormData();
     formData.append('test_id', testId);
-    
+
     try {
       const token = localStorage.getItem("token");
       const response = await fetch('https://intervu-1-0.onrender.com/admin/get_test_user', {
@@ -169,23 +169,23 @@ function Admin() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (skills.length === 0) {
       setSubmitError("Please add at least one skill");
       return;
     }
-    
+
     const testData = {
       name: testName,
       domain,
       type: testType,
       skills
     };
-    
+
     setIsSubmitting(true);
     setSubmitError(null);
     setSubmitSuccess(false);
-    
+
     try {
       const token = localStorage.getItem("token");
       const response = await fetch('https://intervu-1-0.onrender.com/admin/createTest', {
@@ -197,29 +197,34 @@ function Admin() {
         credentials: 'include',
         body: JSON.stringify(testData),
       });
-      
+
       const responseData = await response.json();
       console.log('Response:', responseData);
-      
+
       if (!response.ok) {
         throw new Error(responseData?.message || `Error: ${response.status}`);
       }
-      
+
       setNewTest(responseData);
       setSubmitSuccess(true);
-      
+
       fetchExistingTests();
-      
+
       setTimeout(() => {
         handleCloseModal();
       }, 1500);
-      
+
     } catch (error) {
       console.error('Error submitting test:', error);
       setSubmitError(error instanceof Error ? error.message : 'An unknown error occurred');
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate('/login');
   };
 
   const TestTable = ({ tests }) => (
@@ -263,9 +268,8 @@ function Admin() {
                 <button
                   onClick={() => handleAnalyze(test._id)}
                   disabled={analyzingTestId === test._id}
-                  className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${
-                    analyzingTestId === test._id ? 'opacity-50 cursor-not-allowed' : ''
-                  }`}
+                  className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${analyzingTestId === test._id ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
                 >
                   <LineChart className="h-4 w-4 mr-1" />
                   {analyzingTestId === test._id ? 'Analyzing...' : 'Analyze'}
@@ -292,9 +296,18 @@ function Admin() {
       {/* Header */}
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center">
-            <LayoutDashboard className="h-8 w-8 text-indigo-600 mr-3" />
-            <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <LayoutDashboard className="h-8 w-8 text-indigo-600 mr-3" />
+              <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
+            </div>
+            <button
+              onClick={handleLogout}
+              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+              <LogOut className="h-5 w-5 mr-2" />
+              Logout
+            </button>
           </div>
         </div>
       </header>
@@ -333,7 +346,7 @@ function Admin() {
                       <X className="h-6 w-6" />
                     </button>
                   </div>
-                  
+
                   <div className="mt-4">
                     <table className="min-w-full divide-y divide-gray-200">
                       <thead className="bg-gray-50">
@@ -426,22 +439,22 @@ function Admin() {
                   <X className="h-6 w-6" />
                 </button>
               </div>
-              
+
               <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                 <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">Create New Test</h3>
-                
+
                 {submitSuccess && (
                   <div className="mb-4 p-3 bg-green-50 text-green-800 rounded-md">
                     Test created successfully!
                   </div>
                 )}
-                
+
                 {submitError && (
                   <div className="mb-4 p-3 bg-red-50 text-red-800 rounded-md">
                     {submitError}
                   </div>
                 )}
-                
+
                 <form onSubmit={handleSubmit}>
                   {/* Test Name */}
                   <div className="mb-4">
@@ -480,9 +493,8 @@ function Admin() {
                           {domains.map((domainOption) => (
                             <div
                               key={domainOption}
-                              className={`cursor-pointer select-none relative py-2 pl-3 pr-9 hover:bg-indigo-50 ${
-                                domain === domainOption ? 'bg-indigo-100' : ''
-                              }`}
+                              className={`cursor-pointer select-none relative py-2 pl-3 pr-9 hover:bg-indigo-50 ${domain === domainOption ? 'bg-indigo-100' : ''
+                                }`}
                               onClick={() => {
                                 setDomain(domainOption);
                                 setIsDomainDropdownOpen(false);
@@ -523,9 +535,8 @@ function Admin() {
                           {testTypes.map((typeOption) => (
                             <div
                               key={typeOption}
-                              className={`cursor-pointer select-none relative py-2 pl-3 pr-9 hover:bg-indigo-50 ${
-                                testType === typeOption ? 'bg-indigo-100' : ''
-                              }`}
+                              className={`cursor-pointer select-none relative py-2 pl-3 pr-9 hover:bg-indigo-50 ${testType === typeOption ? 'bg-indigo-100' : ''
+                                }`}
                               onClick={() => {
                                 setTestType(typeOption);
                                 setIsTypeDropdownOpen(false);
@@ -567,7 +578,7 @@ function Admin() {
                         Add
                       </button>
                     </div>
-                    
+
                     {/* Skills Tags */}
                     <div className="mt-2 flex flex-wrap gap-2">
                       {skills.map((skill, index) => (
@@ -590,14 +601,13 @@ function Admin() {
                       </p>
                     )}
                   </div>
-                  
+
                   <div className="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
                     <button
                       type="submit"
                       disabled={isSubmitting}
-                      className={`w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:col-start-2 sm:text-sm ${
-                        isSubmitting ? 'opacity-70 cursor-not-allowed' : ''
-                      }`}
+                      className={`w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:col-start-2 sm:text-sm ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''
+                        }`}
                     >
                       {isSubmitting ? 'Creating...' : 'Create'}
                     </button>
@@ -605,9 +615,8 @@ function Admin() {
                       type="button"
                       onClick={handleCloseModal}
                       disabled={isSubmitting}
-                      className={`mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:col-start-1 sm:text-sm ${
-                        isSubmitting ? 'opacity-70 cursor-not-allowed' : ''
-                      }`}
+                      className={`mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:col-start-1 sm:text-sm ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''
+                        }`}
                     >
                       Cancel
                     </button>

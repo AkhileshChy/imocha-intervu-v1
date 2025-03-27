@@ -33,6 +33,11 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    const logout = () => {
+        localStorage.removeItem("token"); // Remove token from localStorage
+        setUser(null); // Reset user state
+    };
+
     // Validate user on component mount
     useEffect(() => {
         validateUser();
