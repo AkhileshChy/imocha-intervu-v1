@@ -30,6 +30,7 @@ const Interview = () => {
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [adaptiveBool, setAdaptiveBool] = useState(false);
+  const [audioInstance, setAudioInstance] = useState(null);
   // const [interviewType, setInterviewType] = useState('ai'); // 'ai' or 'static'
 
 
@@ -51,7 +52,7 @@ const Interview = () => {
 
   const generateSpeech = async (data) => {
     setLoading(true);
-    const apiKey = "sk_cfd322d82956083e20bc611e4517127b0783a3280cb2f81d";
+    const apiKey = "sk_6b755f4125a21e5b6bf8831dd7233df778710b392c32458c";
     const voiceId = "Xb7hH8MSUJpSbSDYk0k2";
     try {
       const response = await axios.post(
@@ -69,8 +70,14 @@ const Interview = () => {
       );
 
       const audioUrl = URL.createObjectURL(response.data);
+      if (audioInstance) {
+        audioInstance.pause(); // Stop previous audio if it's playing
+        audioInstance.currentTime = 0;
+      }
       const audio = new Audio(audioUrl);
+      setAudioInstance(audio);
       audio.play();
+
     } catch (error) {
       console.error("Error generating speech:", error);
     } finally {
@@ -112,6 +119,9 @@ const Interview = () => {
 
   const startRecording = async () => {
     try {
+      if (audioInstance){
+        stopSpeech();
+      }
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: true,
         video: true,
@@ -186,20 +196,20 @@ const Interview = () => {
         },
         body: formData2,
       });
-      
+
       if (!response2.ok) {
         throw new Error("Failed to submit recording");
       }
       // let result;
-      
+
       let result = await response2.json();
       console.log(result);
-      
+
       if (currentQuestionIndex === 4) {
         navigate("/feedback");
         return;
       }
-      
+
       setQuestion(result[0]);
       setAdaptiveBool(result[1]);
       generateSpeech(result[0]);
@@ -233,8 +243,8 @@ const Interview = () => {
         }
       );
       console.log(responseDomain);
-      const res = await responseDomain.json(); 
-      
+      const res = await responseDomain.json();
+
       const title = res.domain;
       console.log(title);
       const videoStream = await navigator.mediaDevices.getUserMedia({
@@ -246,7 +256,7 @@ const Interview = () => {
 
       let formData = new FormData();
       formData.append("domain", `${title}`);
-      
+
 
       const response = await fetch(
         "https://intervu-1-0.onrender.com/FirstQuestion",
@@ -271,6 +281,18 @@ const Interview = () => {
       setIsBlurred(false);
     }
   };
+
+  const stopSpeech = () => {
+    if (audioInstance) {
+      audioInstance.pause();
+      audioInstance.currentTime = 0; // Reset audio to start
+    }
+  };
+
+  const handleEndTest = async () => {
+    stopSpeech();
+    navigate("/feedback");
+  }
 
   const canStartInterview = Object.values(deviceStatus).every(
     (status) => status === true
@@ -314,15 +336,22 @@ const Interview = () => {
       {isInterviewStarted ? (
         <div className="h-screen w-full flex">
 
-
-
-
           <div className="w-1/4 p-4 bg-gray-900">
-            <Card className="h-full bg-black/70 backdrop-blur-sm shadow-lg">
+            <Card className="h-full bg-black/70 backdrop-blur-sm shadow-lg rounded-lg relative">
               <CardHeader>
-                <h2 className="text-white text-xl font-semibold">
-                  Question {currentQuestionIndex + 1}{adaptiveBool ? ".1" : ""}
-                </h2>
+                <div className="p-4 flex justify-between items-center">
+
+                  <h2 className="text-white text-xl font-semibold">
+                    Question {currentQuestionIndex + 1}{adaptiveBool ? ".1" : ""}
+                  </h2>
+                  <button
+                    onClick={handleEndTest}
+                    className="py-2 px-4 rounded-lg bg-yellow-600 hover:bg-yellow-700 text-white transition-colors text-sm"
+                    disabled={isBlurred}
+                  >
+                    End Test
+                  </button>
+                </div>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div
