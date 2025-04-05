@@ -14,7 +14,23 @@ function Admin() {
   const [viewingResultsId, setViewingResultsId] = useState(null);
   const [testResults, setTestResults] = useState([]);
   const [showResults, setShowResults] = useState(false);
+  const [assessmentCriteria, setAssessmentCriteria] = useState([]);
 
+  const criteriaOptions = [
+    "Problem-Solving Ability",
+    "Communication Skills",
+    "Real-World Application",
+    "Structured Thinking in Explanations",
+    "Technical Proficiency"
+  ];
+
+  const handleCriteriaToggle = (criteria) => {
+    setAssessmentCriteria(prev =>
+      prev.includes(criteria)
+        ? prev.filter(c => c !== criteria)
+        : [...prev, criteria]
+    );
+  };
 
   // Form state
   const [testName, setTestName] = useState('');
@@ -145,6 +161,7 @@ function Admin() {
     setTestType('adaptive');
     setSkills([]);
     setCurrentSkill('');
+    setAssessmentCriteria([]);
     setSubmitError(null);
     setSubmitSuccess(false);
   };
@@ -175,11 +192,17 @@ function Admin() {
       return;
     }
 
+    if (assessmentCriteria.length === 0) {
+      setSubmitError("Please select at least one assessment criteria");
+      return;
+    }
+
     const testData = {
       name: testName,
       domain,
       type: testType,
-      skills
+      skills,
+      selected_params: assessmentCriteria
     };
 
     setIsSubmitting(true);
@@ -595,11 +618,39 @@ function Admin() {
                         </div>
                       ))}
                     </div>
-                    {skills.length === 0 && (
+                    {/* {skills.length === 0 && (
                       <p className="mt-1 text-sm text-gray-500">
                         Please add at least one skill
                       </p>
-                    )}
+                    )} */}
+
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Assessment Criteria
+                    </label>
+                    <div className="space-y-2">
+                      {criteriaOptions.map((criteria) => (
+                        <div key={criteria} className="relative flex items-start">
+                          <div className="flex items-center h-5">
+                            <input
+                              type="checkbox"
+                              checked={assessmentCriteria.includes(criteria)}
+                              onChange={() => handleCriteriaToggle(criteria)}
+                              className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded"
+                            />
+                          </div>
+                          <div className="ml-3 text-sm">
+                            <label className="font-medium text-gray-700">
+                              {criteria}
+                            </label>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    {/* {assessmentCriteria.length === 0 && (
+                      <p className="mt-1 text-sm text-gray-500">
+                        Please select at least one assessment criteria
+                      </p>
+                    )} */}
                   </div>
 
                   <div className="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">

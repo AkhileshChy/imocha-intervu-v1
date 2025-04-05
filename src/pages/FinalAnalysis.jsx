@@ -112,7 +112,7 @@ function FinalAnalysis() {
     }
 
     const totalScore = Object.values(scores).reduce((acc, curr) => acc + curr, 0);
-    const overallPercentage = (totalScore / (50 * 5) * 100).toFixed(1); // Assuming max score is 10 for each category
+    const overallPercentage = (totalScore / (50 * Object.keys(scores)?.length) * 100).toFixed(1); // Assuming max score is 10 for each category
 
     const labels = Object.keys(scores).map(key =>
         key.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase())
