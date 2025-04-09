@@ -34,7 +34,7 @@ function Admin() {
 
   // Form state
   const [testName, setTestName] = useState('');
-  const [domain, setDomain] = useState('Frontend Development');
+  const [domain, setDomain] = useState('System-Design');
   const [testType, setTestType] = useState('adaptive');
   const [skills, setSkills] = useState([]);
   const [currentSkill, setCurrentSkill] = useState('');
@@ -45,6 +45,10 @@ function Admin() {
     'System-Design',
     'AI-ML',
     'Product-Manager',
+    'Java-Developer',
+    'Customer-Success-Manager',
+    'SDE',
+    'Customer-Relationship-Manager'
   ];
 
   const testTypes = ['adaptive', 'static', 'hybrid'];
